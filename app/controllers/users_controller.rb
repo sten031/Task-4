@@ -3,12 +3,13 @@ class UsersController < ApplicationController
   before_action :screen_user, only: [:edit, :update]
 
   def show
-    @user =User.find(params[:id])
+    @user = User.find(params[:id])
     @books = @user.books
     @book = Book.new
   end
 
   def index
+  
     @users = User.all
     @book = Book.new
   end
