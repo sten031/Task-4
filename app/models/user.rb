@@ -8,23 +8,23 @@ class User < ApplicationRecord
   validates :name, presence: true, length: {maximum: 10, minimum: 2}
   validates :introduction, length: {maximum: 50}
   has_many :favorites
-  has_many :relationships
-  has_many :followings, through: :relationships, source: :follow
-  has_many :reverse_of_relationships, class_name: 'Relationship', foreign_key: 'follow_id'
-  has_many :followers, through: :reverse_of_relationships, source: :user
+  
+  has_many :follower, class_name: "Relationships", foreign_key: "follower_id", dependent: :destroy # フォロー取得
+  has_many :followed, class_name: "Relationships", foreign_key: "followed_id", dependent: :destroy # フォロワー取得
+  has_many :following_user, through: :follower, source: :followed # 自分がフォローしている人
+  has_many :follower_user, through: :followed, source: :follower # 自分をフォローしている人
 
-  def follow(other_user)
-    unless self == other_user
-      self.relationshipa.find_or_create_by(follow_id: other_user.id)
-    end
+  def follow(user_id)
+    follower.create(followed_id: user_id)
   end
-
-  def unfollow(other_user)
-    relationship = selt.relationships.find_by(follow_id: other_user.id)
-    relationship.destroy if relationship
+  
+  # ユーザーのフォローを外す
+  def unfollow(user_id)
+    follower.find_by(followed_id: user_id).destroy
   end
-
-  def following?(other_user)
-    self.followings.include?(other_user)
+  
+  # フォローしていればtrueを返す
+  def following?(user)
+    following_user.include?(user)
   end
-end
+end 
